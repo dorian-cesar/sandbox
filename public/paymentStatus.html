@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estado de Tu Pago</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; text-align: center; }
+        .status-container {
+            border: 1px solid #eee;
+            padding: 30px;
+            max-width: 500px;
+            margin: 50px auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .success { color: green; font-weight: bold; }
+        .pending { color: orange; font-weight: bold; }
+        .rejected { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="status-container">
+        <h2>Verificando el Estado de Tu Pago...</h2>
+        <p id="orderIdDisplay"></p>
+        <p id="paymentStatus">Cargando...</p>
+        <div id="loadingStatus"></div>
+        <a href="/" style="margin-top: 20px; display: inline-block;">Volver a la Tienda</a>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            const pathSegments = window.location.pathname.split('/');
+            const orderId = pathSegments[pathSegments.length - 1]; // Obtiene el orderId de la URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const flowToken = urlParams.get('token'); // Obtiene el token de Flow si viene en la URL
+
+            if (orderId) {
+                $('#orderIdDisplay').text('Orden de Compra: ' + orderId);
+                $('#loadingStatus').text('Consultando estado...');
+
+                $.ajax({
+                    url: `/api/paymentStatus/${orderId}?token=${flowToken || ''}`, // Pasa el token a la consulta del backend
+                    method: 'GET',
+                    success: function(response) {
+                        $('#loadingStatus').hide();
+                        if (response.success) {
+                            let statusText = '';
+                            let statusClass = '';
+                            switch (response.status) {
+                                case 1:
+                                    statusText = '¡Pago APROBADO!';
+                                    statusClass = 'success';
+                                    break;
+                                case 2:
+                                    statusText = 'Pago RECHAZADO.';
+                                    statusClass = 'rejected';
+                                    break;
+                                case 3:
+                                    statusText = 'Pago PENDIENTE.';
+                                    statusClass = 'pending';
+                                    break;
+                                default:
+                                    statusText = 'Estado desconocido.';
+                                    statusClass = '';
+                            }
+                            $('#paymentStatus').text(statusText).addClass(statusClass);
+                            console.log('Detalles del estado:', response.flowResponse);
+                        } else {
+                            $('#paymentStatus').text('Error al obtener el estado del pago: ' + (response.message || 'Desconocido')).addClass('rejected');
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        $('#loadingStatus').hide();
+                        $('#paymentStatus').text('Error de conexión para consultar el estado.').addClass('rejected');
+                        console.error('AJAX Error:', textStatus, errorThrown, jqXHR.responseText);
+                    }
+                });
+            } else {
+                $('#paymentStatus').text('ID de orden no encontrado en la URL.').addClass('rejected');
+            }
+        });
+    </script>
+</body>
+</html>
