@@ -48,15 +48,15 @@
                             let statusText = '';
                             let statusClass = '';
                             switch (response.status) {
-                                case 1:
+                                case 2:
                                     statusText = '¡Pago APROBADO!';
                                     statusClass = 'success';
                                     break;
-                                case 2:
+                                case 3:
                                     statusText = 'Pago RECHAZADO.';
                                     statusClass = 'rejected';
                                     break;
-                                case 3:
+                                case 1:
                                     statusText = 'Pago PENDIENTE.';
                                     statusClass = 'pending';
                                     break;
