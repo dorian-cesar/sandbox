@@ -51,7 +51,7 @@ app.post('/api/createPayment', async (req, res) => {
             urlReturn: `${APP_BASE_URL}/paymentStatus/${orderId}`,      // URL a la que Flow redirigirá al cliente
             optional: JSON.stringify({ userId: 'user123', product: 'DemoProduct' }) // Datos adicionales si los necesitas
 
-           
+
         };
         console.log(params);
 
@@ -85,6 +85,11 @@ app.post('/api/createPayment', async (req, res) => {
 
 // 2. Ruta para el callback (IPN) de Flow - Confirmación de Pago
 app.post('/api/paymentConfirmation', async (req, res) => {
+    console.log('Headers del Callback:', req.headers);
+    console.log('Cuerpo del Callback (req.body):', req.body); // Esto es lo crucial
+    console.log('Query Params del Callback (req.query):', req.query); // A veces vienen cosas aquí
+
+    const flowResponse = req.body;
     try {
         const flowResponse = req.body;
         console.log('Callback de Flow recibido:', flowResponse);
